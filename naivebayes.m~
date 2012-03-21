@@ -1,0 +1,46 @@
+function [likelihood] = naivebayes(data)
+
+    likelihood = 0;
+    cat_y = hist(data(:,4),64); % y categories number
+
+    %dirichlet distribution ( prior )
+    p_y = (cat_y+1) / (length(data)+64); 
+
+    %sort according to the y value(from 0 to 64)
+    [Y I] = sort(data(:,4));
+    sorted_data = data(I,:);
+
+    
+
+    %conditional independent probilites
+    p_x_y = zeros(3,64,64); % (x_index=1:3, x_value=0:63, y_value=0:63)
+
+    for i=1:64
+        start = 0;
+        for j=1:i-1
+            start = start + cat_y(j);
+        end
+
+        data_part = sorted_data(start+1:start+cat_y(i),: ); 
+        for v = 0:63
+           p_x_y(1,v+1,i) = sum(data_part(:,1)==v) / cat_y(i); 
+           p_x_y(2,v+1,i) = sum(data_part(:,2)==v) / cat_y(i);
+           p_x_y(3,v+1,i) = sum(data_part(:,3)==v) / cat_y(i);
+        end
+
+    end 
+    
+
+    for i=1:length(data)
+        x1 = data(i,1);
+        x2 = data(i,2);
+        x3 = data(i,3);
+        y  = data(i,4);
+        likelihood = likelihood * p_y(y) * p_x_y(1,x1,y) * p_x_y(2,x2,y) * p_x_y(3,x2,y);
+    end
+    
+    
+end
+
+
+

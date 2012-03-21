@@ -1,0 +1,48 @@
+clear all;
+load imdata.mat;
+x=double(x);
+y=double(y);
+
+p = [x(:,end), x(:,end-34), x(:,end-35)]';
+
+%naive bayes
+
+num = hist(p(3,:),64);
+p_c = zeros(1,64); 
+for i=1:64
+    p_c(i) = num(i) / 100000;
+end
+
+
+[Y,I] = sort(p(3,:));
+p_sort = p(:,I);
+m_c = zeros(2,64);
+for i=1:63
+    start = 1;
+    for j=1:i-1
+        start = start + num(j);
+    end
+
+    m_c(1,i) = mean( p_sort(1,start:start+num(i))' )'; 
+    m_c(2,i) = mean( p_sort(2,start:start+num(i))' )'; 
+end 
+index = 100000-num(64) + 1; %99467
+m_c(1,64) = mean( p_sort(1,index:end)' )'; 
+m_c(2,64) = mean( p_sort(2,index:end)' )'; 
+
+
+%test data
+test = [ 33, 33]';
+np_c = zeos(1,64);
+for i=1:64
+    np_c(i) = p_c(i) * prod(m_c(:,i).^test.*(1-m_c(:,i)).^(1-test));
+end
+
+ptest1 = np_c(1) / sum(np_c);
+for i=1:64
+    np_c(i) = p_c(i) * prod(m_c(:,i).^test.*(1-m_c(:,i)).^(1-test));
+end
+
+ptest1 = np_c(1) / sum(np_c);
+
+    
